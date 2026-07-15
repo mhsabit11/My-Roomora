@@ -1,7 +1,7 @@
 import React, {useState, useCallback} from 'react'
 import {useOutletContext} from "react-router";
 import {CheckCircle2, ImageIcon, UploadIcon} from "lucide-react";
-import {PROGRESS_INTERVAL_MS, PROGRESS_STEP, REDIRECT_DELAY_MS} from "../lib/constants";
+import {PROGRESS_INTERVAL_MS, PROGRESS_STEP, REDIRECT_DELAY_MS, MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB, ALLOWED_MIME_TYPES} from "../lib/constants";
 
 interface UploadProps {
     onComplete?: (base64: string) => void;
@@ -11,31 +11,52 @@ const Upload = ({onComplete}: UploadProps) => {
     const[file,setFile] = useState<File | null>(null);
     const[isDragging, setIsDragging] = useState(false);
     const[progress, setProgress] = useState(0);
+    const[error, setError] = useState<string | null>(null);
 
     const {isSignedIn} = useOutletContext<AuthContext>();
 
     const processFile = useCallback((selectedFile: File) => {
         if (!isSignedIn) return;
 
+        setError(null);
+
+        if (!ALLOWED_MIME_TYPES.includes(selectedFile.type)) {
+            setError('Invalid file type. Please upload a JPEG or PNG image.');
+            return;
+        }
+
+        if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
+            setError(`File size exceeds ${MAX_FILE_SIZE_MB} MB limit.`);
+            return;
+        }
+
         setFile(selectedFile);
         setProgress(0);
 
         const reader = new FileReader();
+        const handleReadError = () => {
+            setFile(null);
+            setProgress(0);
+            setError('Failed to read file. Please try again.');
+        };
+        reader.onerror = handleReadError;
+        reader.onabort = handleReadError;
         reader.onload = () => {
             const base64 = reader.result as string;
 
+            let currentProgress = 0;
+            let completed = false;
             const interval = setInterval(() => {
-                setProgress((prev) => {
-                    const next = prev + PROGRESS_STEP;
-                    if (next >= 100) {
-                        clearInterval(interval);
-                        setTimeout(() => {
-                            onComplete?.(base64);
-                        }, REDIRECT_DELAY_MS);
-                        return 100;
-                    }
-                    return next;
-                });
+                currentProgress = Math.min(currentProgress + PROGRESS_STEP, 100);
+                setProgress(currentProgress);
+
+                if (currentProgress >= 100 && !completed) {
+                    completed = true;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        onComplete?.(base64);
+                    }, REDIRECT_DELAY_MS);
+                }
             }, PROGRESS_INTERVAL_MS);
         };
         reader.readAsDataURL(selectedFile);
@@ -99,7 +120,8 @@ const Upload = ({onComplete}: UploadProps) => {
                                 "Please sign in or Sign up with Puter to upload"
                             )}
                         </p>
-                        <p className="help">Maximum File Size 50 MB. </p>
+                        <p className="help">{`Maximum File Size ${MAX_FILE_SIZE_MB} MB.`} </p>
+                        {error && <p className="error">{error}</p>}
                     </div>
                 </div>
             ) : (

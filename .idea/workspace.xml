@@ -5,11 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="21c7c219-29e5-4a08-a223-4d72cc758eb1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/routes/visualizer.$id.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/Upload.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/constants.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/home.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/home.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Upload.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Upload.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,7 +14,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="32" />
+    <option name="cachedIndexableFilesCount" value="34" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -137,7 +134,7 @@
       <workItem from="1783950949923" duration="4631000" />
       <workItem from="1784039381114" duration="4426000" />
       <workItem from="1784114202410" duration="104000" />
-      <workItem from="1784114355656" duration="3939000" />
+      <workItem from="1784114355656" duration="5634000" />
     </task>
     <servers />
   </component>
