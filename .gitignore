@@ -2,6 +2,9 @@
 .env
 /node_modules/
 
+# IntelliJ user-specific workspace state
+.idea/workspace.xml
+
 # React Router
 /.react-router/
 /build/

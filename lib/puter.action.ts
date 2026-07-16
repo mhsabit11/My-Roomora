@@ -16,6 +16,14 @@ export const getCurrentUser = async ()  => {
 }
 
 
+export const getProject = async (projectId: string): Promise<DesignItem | null> => {
+    try {
+        return (await puter.kv.get(`project:${projectId}`)) as DesignItem | null;
+    } catch {
+        return null;
+    }
+}
+
 export const createProject = async ({ item}: CreateProjectParams): Promise< DesignItem | null | undefined > => {
     const projectId = item.id;
 
@@ -59,8 +67,7 @@ export const createProject = async ({ item}: CreateProjectParams): Promise< Desi
     }
 
     try{
-        //Call the Puter worker to store project in kv
-
+        await puter.kv.set(`project:${projectId}`, payload);
         return payload;
     } catch (e) {
         console.log('Failed to save project', e)
