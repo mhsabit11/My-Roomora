@@ -1,61 +1,122 @@
-import {useLocation, useParams} from "react-router";
-import {useEffect, useState} from "react";
+import {useLocation, useNavigate, useParams} from "react-router";
+import {useEffect, useRef, useState} from "react";
 import {getProject} from "../../lib/puter.action";
+import {generate3DView} from "../../lib/ai.action";
+import {Box, Download, RefreshCcw, Share2, X} from "lucide-react";
+import Button from "../../components/ui/Button";
 
 const VisualizerId = () => {
-    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
     const location = useLocation();
-    const navState = (location.state || {}) as VisualizerLocationState;
+    const { initialImage,initialRender, name } = location.state || {};
 
-    const [project, setProject] = useState<{
-        initialImage?: string;
-        initialRenderedImage?: string | null;
-        name?: string | null;
-    }>({
-        initialImage: navState.initialImage,
-        name: navState.name,
-    });
+    const hasInitialGenerated = useRef(false);
+    const [ isProcessing,  setIsProcessing] = useState(false);
 
-    const [loading, setLoading] = useState(!navState.initialImage);
+    const [currentImage, setCurrentImage] = useState<string | null>(initialRender || null);
+
+const handleBack = () => navigate('/');
+
+const runGeneration = async () => {
+    if(!initialImage) return;
+
+    try{
+        setIsProcessing(true);
+        const result = await generate3DView({ sourceImage: initialImage });
+
+        if(result.renderedImage) {
+            setCurrentImage(result.renderedImage);
+            //update the url with the new image
+        }
+    } catch (e) {
+        console.error(`Failed to generate 3D view ${e}`);
+    } finally {
+        setIsProcessing(false);
+    }
+}
 
     useEffect(() => {
-        if (navState.initialImage || !id) return;
+        if(!initialImage || hasInitialGenerated.current) return;
 
-        let cancelled = false;
-        setLoading(true);
+        if(initialRender) {
+            setCurrentImage(initialRender);
+            hasInitialGenerated.current = true;
+            return;
+        }
+        hasInitialGenerated.current = true;
+        runGeneration();
 
-        getProject(id).then((saved) => {
-            if (cancelled) return;
-            if (saved) {
-                setProject({
-                    initialImage: saved.sourceImage,
-                    initialRenderedImage: saved.renderedImage,
-                    name: saved.name,
-                });
-            }
-            setLoading(false);
-        });
+    }, [initialImage,initialRender]);
 
-        return () => { cancelled = true; };
-    }, [id, navState.initialImage]);
 
-    if (loading) {
-        return <section><p>Loading project…</p></section>;
-    }
+
 
     return (
-        <section>
-            <h1> { project.name || 'Untitled Project '}</h1>
-
             <div className="visualizer">
-                { project.initialImage && (
-                    <div className="image-container">
-                        <h2>Source Image</h2>
-                        <img src={project.initialImage} alt="source" />
+                <nav className="topbar">
+                    <div className="brand">
+                        <Box className="logo" />
+
+                        <span className="name">
+                            Roomify
+                        </span>
                     </div>
-                )}
+                    <Button variant="ghost" size="sm" onClick={handleBack} className="exit">
+                        <X className="icon" /> Exit Editor
+                    </Button>
+                </nav>
+
+
+                <section className="content">
+                    <div className="panel">
+                       <div className="panel-header">
+                        <div className="panel-meta">
+                            <p>Project</p>
+                            <h2>{'Untitled Project'}</h2>
+                            <p className="note">Creted By You</p>
+                        </div>
+
+                           <div className="panel-actions">
+                               <Button
+                                   size="sm"
+                                   onClick={() => {}}
+                                   className="export"
+                                   disabled={!currentImage}
+                               >
+                                   <Download className="w-2 h-4 mr-2" /> Export
+                               </Button>
+                               <Button size="sm" onClick={() => {}}  className="share">
+                                   <Share2 className="w-4 h-4 mr-2" />
+                                   Share
+                               </Button>
+                           </div>
+                       </div>
+                        <div className={`render-area ${isProcessing ? 'is-processing' : ''}`}>
+                            {currentImage ? (
+                                <img src={currentImage} alt="AI Render" className="render-image" />
+                            ) : (
+                                <div className="render-placeholder">
+                                    {initialImage && (
+                                        <img src={initialImage} alt="Original" className="render-fallback" />
+                                    )}
+                                </div>
+                            )}
+
+                            {isProcessing && (
+                            <div className="render-overlay">
+                                <div className="rendering-card">
+                                    <RefreshCcw className="spinner" />
+                                    <span className="title">Rendering...</span>
+                                    <span className="subtitle">Generating Your 3D Visualization.</span>
+                                </div>
+                            </div>
+                        )}
+                        </div>
+
+
+                    </div>
+                </section>
             </div>
-        </section>
     )
 }
 export default VisualizerId
