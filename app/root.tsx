@@ -83,7 +83,7 @@ export default function App() {
   }
 
   const signOut = async () => {
-     puterSignOut();
+      puterSignOut();
     return await refreshAuth();
   }
 
@@ -96,7 +96,7 @@ export default function App() {
              signIn,
              signOut,
            }}
-        />;
+        />
       </main>
   )
 
